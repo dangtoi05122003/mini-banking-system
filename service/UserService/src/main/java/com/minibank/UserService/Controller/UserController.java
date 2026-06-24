@@ -1,0 +1,24 @@
+package com.minibank.UserService.Controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.minibank.UserService.Service.UserService;
+import com.minibank.UserService.dto.Request.User.UserRequest;
+import com.minibank.UserService.dto.Response.UserResponse;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/user")
+public class UserController {
+    @Autowired
+    private UserService userService;
+    @PostMapping("/register")
+    public UserResponse register(@Valid @RequestBody UserRequest request) {
+        return userService.createUser(request);
+    }
+}
