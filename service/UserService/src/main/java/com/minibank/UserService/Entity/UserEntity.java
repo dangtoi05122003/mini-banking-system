@@ -1,7 +1,10 @@
 package com.minibank.UserService.Entity;
 
+import java.time.Instant;
+
 import com.minibank.UserService.Enum.UserStatus;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -18,9 +21,15 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique=true)
     private String username;
+    @Column(nullable = false, unique=true)
     private String email;
+    @Column(nullable = false)
     private String password;
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+    @Column(nullable = false)
+    private int authenticationFailureCount = 0;
+    private Instant lockedAt;
 }
