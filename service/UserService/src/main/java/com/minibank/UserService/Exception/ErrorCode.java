@@ -18,7 +18,8 @@ public enum ErrorCode {
     IDENTITY_UPLOAD_FAILED(3001, "Tải thông tin định danh thất bại"),
     IDENTITY_NOT_FOUND(3002, "Không tìm thấy thông tin định danh"),
     IDENTITY_ALREADY_SUBMITTED(3003, "Hồ sơ KYC đang chờ duyệt hoặc đã được xác minh"),
-    IDENTITY_ALREADY_VERIFIED(3004, "Hồ sơ định danh đã được xác minh, không thể chỉnh sửa.");
+    IDENTITY_ALREADY_VERIFIED(3004, "Hồ sơ định danh đã được xác minh, không thể chỉnh sửa."),
+    IDENTITY_ALREADY_EXISTS(3005, "Hồ sơ định danh đã được tạo trước đó");
     private int code;
     private String message;
 }

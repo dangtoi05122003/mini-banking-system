@@ -20,5 +20,5 @@ public class AuthController {
     @PostMapping("/customer")
     public AuthResponse loginCustomer(@Valid @RequestBody AuthRequest request) {
         return authService.loginCustomer(request);
-    }    
+    }
 }

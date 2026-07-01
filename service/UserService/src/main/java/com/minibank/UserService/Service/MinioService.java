@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.minibank.UserService.Exception.AppException;
+import com.minibank.UserService.Exception.ErrorCode;
+
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 
@@ -28,7 +31,7 @@ public class MinioService {
             );
             return minioUrl + "/" + bucket + "/" + objectName;
         } catch (Exception e) {
-            throw new RuntimeException("Upload thất bại: " + e.getMessage());
+            throw new AppException(ErrorCode.IDENTITY_UPLOAD_FAILED);
         }
     }
 }

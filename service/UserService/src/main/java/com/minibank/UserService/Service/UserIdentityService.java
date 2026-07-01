@@ -31,9 +31,10 @@ public class UserIdentityService {
     @Autowired
     private UserRepository userRepository;
     public UserIdentityResponse createUserIdentity(UserIdentityRequest request) {
+        Long userId = getCurrentUserId();
+        UserEntity user = userRepository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
+        userIdentityRepository.findByUserId(userId).ifPresent(u -> {throw new AppException(ErrorCode.IDENTITY_ALREADY_EXISTS);});
         try {
-            Long userId = getCurrentUserId();
-            UserEntity user = userRepository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
             MultipartFile front = request.getIdCardFront();
             MultipartFile back = request.getIdCardBack();
             String frontUrl = minioService.uploadFile(
