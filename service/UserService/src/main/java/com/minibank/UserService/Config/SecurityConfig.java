@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/user/register", "/auth/**").permitAll()
+                .requestMatchers("/user/register", "/auth/**", "/staff/register").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth-> oauth.jwt(jwt-> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthenticationConverter()))

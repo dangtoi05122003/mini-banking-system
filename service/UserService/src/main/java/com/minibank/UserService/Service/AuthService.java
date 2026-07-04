@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.minibank.UserService.Enum.StaffStatus;
 import com.minibank.UserService.Enum.UserStatus;
 import com.minibank.UserService.Exception.AppException;
 import com.minibank.UserService.Exception.ErrorCode;
 import com.minibank.UserService.Repository.UserRepository;
+import com.minibank.UserService.Repository.StaffUserRepository;
 import com.minibank.UserService.dto.Request.Auth.AuthRequest;
 import com.minibank.UserService.dto.Response.AuthResponse;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -26,6 +28,8 @@ import com.nimbusds.jwt.SignedJWT;
 public class AuthService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private StaffUserRepository staffUserRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Value("${jwt.signerkey}")
@@ -56,18 +60,46 @@ public class AuthService {
         user.setLockedAt(null);
         userRepository.save(user);
         String token = generateToken(
-            user.getId(), user.getUsername(), "CUSTOMER", null
+            user.getId(), user.getUsername(), "CUSTOMER"
         );
         return new AuthResponse((token));
     }
-    public String generateToken(Long id, String username, String type, String role) {
+    public AuthResponse loginStaff(AuthRequest request) {
+        var user = staffUserRepository.findByEmail(request.getUsername()).orElseThrow(()-> new AppException(ErrorCode.STAFF_NOT_FOUND));
+        if (user.getStatus() == StaffStatus.LOCKED) {
+            throw new AppException(ErrorCode.STAFF_LOCKED);
+        }
+        if (user.getStatus() == StaffStatus.TERMINATED) {
+            throw new AppException(ErrorCode.STAFF_TERMINATED);
+        }
+        if (user.getStatus() != StaffStatus.ACTIVE) {
+            throw new AppException(ErrorCode.STAFF_NOT_ACTIVE);
+        }
+        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            int failCount = user.getAuthenticationFailureCount() + 1;
+            user.setAuthenticationFailureCount(failCount);
+            if (failCount >= LOGIN_FAILURE_THRESHOLD) {
+                user.setStatus(StaffStatus.LOCKED);
+                user.setLockedAt(Instant.now());
+            }
+            staffUserRepository.save(user);
+            throw new AppException(ErrorCode.WRONG_PASSWORD);
+        }
+        user.setAuthenticationFailureCount(0);
+        user.setLockedAt(null);
+        staffUserRepository.save(user);
+        String token = generateToken(
+            user.getId(), user.getEmail(), user.getRole().name()
+        );
+        return new AuthResponse((token));
+    }
+    public String generateToken(Long id, String username, String role) {
         try {
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
             JWSSigner signer = new MACSigner(SECRET_KEY.getBytes());
             JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
                 .subject(id.toString())
                 .expirationTime(Date.from(Instant.now().plus(12, ChronoUnit.HOURS)))
-                .claim("type", type)
                 .claim("username", username);
             if (role != null){
                 builder.claim("role", role);

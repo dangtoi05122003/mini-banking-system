@@ -19,7 +19,12 @@ public enum ErrorCode {
     IDENTITY_NOT_FOUND(3002, "Không tìm thấy thông tin định danh"),
     IDENTITY_ALREADY_SUBMITTED(3003, "Hồ sơ KYC đang chờ duyệt hoặc đã được xác minh"),
     IDENTITY_ALREADY_VERIFIED(3004, "Hồ sơ định danh đã được xác minh, không thể chỉnh sửa."),
-    IDENTITY_ALREADY_EXISTS(3005, "Hồ sơ định danh đã được tạo trước đó");
+    IDENTITY_ALREADY_EXISTS(3005, "Hồ sơ định danh đã được tạo trước đó"),
+    STAFF_NOT_FOUND(4001, "Không tìm thấy nhân viên"),
+    STAFF_LOCKED(4002, "Tài khoản nhân viên đã bị khóa"),
+    STAFF_TERMINATED(4003, "Tài khoản nhân viên đã bị chấm dứt"),
+    STAFF_NOT_ACTIVE(4004, "Tài khoản nhân viên chưa được kích hoạt"),
+    STAFF_NOT_LOCKED(4005, "Tài khoản nhân viên hiện không bị khóa");
     private int code;
     private String message;
 }

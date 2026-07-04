@@ -21,4 +21,8 @@ public class AuthController {
     public AuthResponse loginCustomer(@Valid @RequestBody AuthRequest request) {
         return authService.loginCustomer(request);
     }
+    @PostMapping("/staff")
+    public AuthResponse loginStaff(@Valid @RequestBody AuthRequest request) {
+        return authService.loginStaff(request);
+    }
 }
