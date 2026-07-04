@@ -1,10 +1,10 @@
 package com.minibank.UserService.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +27,7 @@ public class StaffUserService {
     private StaffUserRepository staffUserRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse createStaff(StaffUserRequest request) {
         StaffUserEntity staff = new StaffUserEntity();
         staff.setUsername(request.getUsername());
@@ -36,10 +37,12 @@ public class StaffUserService {
         staff.setStatus(StaffStatus.ACTIVE);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public StaffUserResponse getStaffById(Long id) {
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         return StaffUserMapper.toResponse(staff);
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse lockStaff(Long id) {
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         if (staff.getStatus() == StaffStatus.TERMINATED) {
@@ -51,6 +54,7 @@ public class StaffUserService {
         staff.setStatus(StaffStatus.LOCKED);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse unlockStaff(Long id) {
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         if (staff.getStatus() == StaffStatus.TERMINATED) {
@@ -62,6 +66,7 @@ public class StaffUserService {
         staff.setStatus(StaffStatus.ACTIVE);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public StaffUserResponse changePassword(ChangePasswordRequest request) {
         Long staffId = getCurrentUserId();
         StaffUserEntity staff = staffUserRepository.findById(staffId).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
@@ -72,17 +77,20 @@ public class StaffUserService {
         staff.setPassword(passwordEncoder.encode(request.getNewPassword()));
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse changeRole(Long id, StaffRole role) {
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         staff.setRole(role);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public List<StaffUserResponse> getAllStaff() {
         return staffUserRepository.findAll()
             .stream()
             .map(StaffUserMapper::toResponse)
             .collect(Collectors.toList());
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public StaffUserResponse updateStaff(UpdateStaffRequest request) {
         Long staffId = getCurrentUserId();
         StaffUserEntity staff = staffUserRepository.findById(staffId).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
@@ -91,6 +99,7 @@ public class StaffUserService {
         staff.setEmail(request.getEmail());
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse deleteStaff(Long id) {
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         if (staff.getStatus() == StaffStatus.TERMINATED) {
@@ -99,18 +108,21 @@ public class StaffUserService {
         staff.setStatus(StaffStatus.TERMINATED);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public StaffUserResponse getMyInfo() {
         Long id = getCurrentUserId();
         StaffUserEntity staff = staffUserRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
         validateUserStatus(staff);
         return StaffUserMapper.toResponse(staff);
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public List<StaffUserResponse> getStaffByRole(StaffRole role) {
         return staffUserRepository.findByRole(role)
                 .stream()
                 .map(StaffUserMapper::toResponse)
                 .collect(Collectors.toList());
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public List<StaffUserResponse> getStaffByStatus(StaffStatus status) {
         return staffUserRepository.findByStatus(status)
                 .stream()

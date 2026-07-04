@@ -1,6 +1,7 @@
 package com.minibank.UserService.Service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,17 +36,20 @@ public class UserService {
         user.setStatus(UserStatus.ACTIVE);
         return UserMapper.toResponse(userRepository.save(user));
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public UserResponse getUserById(Long id) {
         UserEntity user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         validateUserStatus(user);
         return UserMapper.toResponse(user);
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserResponse getMe() {
         Long userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
         validateUserStatus(user);
         return UserMapper.toResponse(user);
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserResponse updateProfile(UserRequest request) {
         Long userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -54,6 +58,7 @@ public class UserService {
         user.setUsername(request.getUsername());
         return UserMapper.toResponse(userRepository.save(user));
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserResponse changePassword(ChangePasswordRequest request) {
         Long userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -64,6 +69,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         return UserMapper.toResponse(userRepository.save(user));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse unlockUser(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         user.setStatus(UserStatus.ACTIVE);
@@ -71,6 +77,7 @@ public class UserService {
         user.setLockedAt(null);
         return UserMapper.toResponse(userRepository.save(user));
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserResponse deleteMyAccount() {
         Long userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -78,6 +85,7 @@ public class UserService {
         user.setStatus(UserStatus.DELETED);
         return UserMapper.toResponse(userRepository.save(user));
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse suspendUser(Long userId) {
         UserEntity user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         if (user.getStatus() == UserStatus.DELETED) {

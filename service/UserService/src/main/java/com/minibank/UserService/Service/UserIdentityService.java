@@ -1,11 +1,12 @@
 package com.minibank.UserService.Service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,7 +20,6 @@ import com.minibank.UserService.Repository.UserIdentityRepository;
 import com.minibank.UserService.Repository.UserRepository;
 import com.minibank.UserService.dto.Request.UserIdentity.UserIdentityRequest;
 import com.minibank.UserService.dto.Response.UserIdentityResponse;
-
 import static com.minibank.UserService.util.SecurityUtil.getCurrentUserId;
 
 @Service
@@ -30,6 +30,7 @@ public class UserIdentityService {
     private MinioService minioService;
     @Autowired
     private UserRepository userRepository;
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserIdentityResponse createUserIdentity(UserIdentityRequest request) {
         Long userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId).orElseThrow(()-> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -62,6 +63,7 @@ public class UserIdentityService {
             throw new AppException(ErrorCode.IDENTITY_UPLOAD_FAILED);
         }
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserIdentityResponse updateIdentity(UserIdentityRequest request) {
         try {
             Long userId = getCurrentUserId();
@@ -100,21 +102,25 @@ public class UserIdentityService {
             throw new AppException(ErrorCode.IDENTITY_UPLOAD_FAILED);
         }
     }
+    @PreAuthorize("hasRole('ADMIN')")
     public UserIdentityResponse updateStatus(Long id, KycStatus status) {
         UserIdentityEntity userIdentity = userIdentityRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.IDENTITY_NOT_FOUND));
         userIdentity.setKycStatus(status);
         userIdentity.setVerifiedAt(Instant.now());
         return UserIdentityMapper.toResponse(userIdentityRepository.save(userIdentity));
     }
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserIdentityResponse getMyIdentity() {
         Long userId = getCurrentUserId();
         UserIdentityEntity userIdentity = userIdentityRepository.findByUserId(userId).orElseThrow(() -> new AppException(ErrorCode.IDENTITY_NOT_FOUND));
         return UserIdentityMapper.toResponse(userIdentity);
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public UserIdentityResponse getById(Long id) {
         UserIdentityEntity userIdentity = userIdentityRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.IDENTITY_NOT_FOUND));
         return UserIdentityMapper.toResponse(userIdentity);
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public List<UserIdentityResponse> getPendingIdentities() {
         return userIdentityRepository.findByKycStatus(KycStatus.PENDING)
             .stream()
