@@ -1,14 +1,17 @@
 package com.minibank.UserService.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.minibank.UserService.Entity.StaffUserEntity;
+import com.minibank.UserService.Enum.EmailType;
 import com.minibank.UserService.Enum.StaffRole;
 import com.minibank.UserService.Enum.StaffStatus;
 import com.minibank.UserService.Exception.AppException;
@@ -26,7 +29,13 @@ public class StaffUserService {
     @Autowired
     private StaffUserRepository staffUserRepository;
     @Autowired
+    private UserService userService;
+    @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private EmailService emailService;
     @PreAuthorize("hasRole('ADMIN')")
     public StaffUserResponse createStaff(StaffUserRequest request) {
         StaffUserEntity staff = new StaffUserEntity();
@@ -36,6 +45,29 @@ public class StaffUserService {
         staff.setRole(StaffRole.TELLER);
         staff.setStatus(StaffStatus.ACTIVE);
         return StaffUserMapper.toResponse(staffUserRepository.save(staff));
+    }
+    public StaffUserResponse sendResetPasswordOtp(String email) {
+        StaffUserEntity staff = staffUserRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
+        String otp = userService.generateOtp();
+        String key = "otp-staff:reset:" + email;
+        redisTemplate.opsForValue().set(key, otp, 5, TimeUnit.MINUTES);
+        emailService.sendOtpEmail(email, otp, EmailType.RESET_PASSWORD);
+        return StaffUserMapper.toResponse(staff);
+    }
+    public StaffUserResponse verifyPassword(String email, String otp, String newPassword) {
+        String key = "otp-staff:reset:" + email;
+        String cachedOtp = redisTemplate.opsForValue().get(key);
+        if (cachedOtp == null) {
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
+        if (!cachedOtp.equals(otp)) {
+            throw new AppException(ErrorCode.OTP_INVALID);
+        }
+        StaffUserEntity staff = staffUserRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.STAFF_NOT_FOUND));
+        staff.setPassword(passwordEncoder.encode(newPassword));
+        staffUserRepository.save(staff);
+        redisTemplate.delete(key);
+        return StaffUserMapper.toResponse(staff);
     }
     @PreAuthorize("hasAnyRole('ADMIN', 'TELLER')")
     public StaffUserResponse getStaffById(Long id) {

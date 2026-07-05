@@ -58,7 +58,7 @@ public class UserService {
         emailService.sendOtpEmail(email, otp, EmailType.RESET_PASSWORD);
         return UserMapper.toResponse(userRepository.save(user));
     }
-    private String generateOtp() {
+    public String generateOtp() {
         return String.valueOf(100000 + random.nextInt(900000));
     }
     public UserResponse verifyUser(String email, String otp) {

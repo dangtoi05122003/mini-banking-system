@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minibank.UserService.Enum.StaffRole;
@@ -27,6 +28,14 @@ public class StaffUserController {
     @PostMapping("/register")
     public StaffUserResponse createStaff(@RequestBody StaffUserRequest request) {
         return staffUserService.createStaff(request);
+    }
+    @PostMapping("/reset-password")
+    public StaffUserResponse sendResetPasswordOtp(@RequestParam String email) {
+        return staffUserService.sendResetPasswordOtp(email);
+    }
+    @PostMapping("/verify-password")
+    public StaffUserResponse verifyOtp(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
+        return staffUserService.verifyPassword(email, otp, newPassword);
     }
     @GetMapping("/{id}")
     public StaffUserResponse getStaffById(@PathVariable Long id) {
