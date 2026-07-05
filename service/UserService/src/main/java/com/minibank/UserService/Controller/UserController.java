@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minibank.UserService.Service.UserService;
@@ -23,6 +24,18 @@ public class UserController {
     @PostMapping("/register")
     public UserResponse register(@Valid @RequestBody UserRequest request) {
         return userService.createUser(request);
+    }
+    @PostMapping("/verify-otp")
+    public UserResponse verifyOtp(@RequestParam String email, @RequestParam String otp) {
+        return userService.verifyUser(email, otp);
+    }
+    @PostMapping("/reset-password")
+    public UserResponse sendResetPasswordOtp(@RequestParam String email) {
+        return userService.sendResetPasswordOtp(email);
+    }
+    @PostMapping("/verify-password")
+    public UserResponse verifyOtp(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
+        return userService.verifyPassword(email, otp, newPassword);
     }
     @PostMapping("/change-password")
     public UserResponse changePassword(@Valid @RequestBody ChangePasswordRequest request) {

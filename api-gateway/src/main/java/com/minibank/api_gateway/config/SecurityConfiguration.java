@@ -23,7 +23,7 @@ public class SecurityConfiguration {
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
-                .pathMatchers("/user/register", "/auth/**", "/staff/register").permitAll()
+                .pathMatchers("/user/register", "/user/verify-otp","/user/reset-password", "/user/verify-password", "/auth/**", "/staff/register").permitAll()
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oAuth2ResourceServer -> 
