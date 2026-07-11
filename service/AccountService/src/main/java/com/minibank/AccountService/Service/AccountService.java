@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.minibank.AccountService.Entity.AccountEntity;
 import com.minibank.AccountService.Enum.AccountStatus;
+import com.minibank.AccountService.Enum.KycStatus;
 import com.minibank.AccountService.Exception.AppException;
 import com.minibank.AccountService.Exception.ErrorCode;
 import com.minibank.AccountService.Repository.AccountRepository;
@@ -24,11 +25,23 @@ public class AccountService {
     private final SecureRandom random = new SecureRandom();
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private UserServiceClient userServiceClient;
+    @Transactional
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public AccountResponse createAccount () {
         Long user_id = getCurrentUserId();
+        AccountStatus status = AccountStatus.PENDING;
+        try {
+            KycStatus kycStatus = userServiceClient.getKycStatusByUserId(user_id);
+            if (kycStatus == KycStatus.APPROVED) {
+                status = AccountStatus.ACTIVE;
+            }
+        } catch (Exception e) {
+            throw new AppException(ErrorCode.USER_SERVICE_UNAVAILABLE);
+        }
         AccountEntity account = new AccountEntity();
-        account.setStatus(AccountStatus.ACTIVE);
+        account.setStatus(status);
         account.setUser_id(user_id);
         account.setAccountNumber(generateAccountNumber());
         account.setBalance(BigDecimal.ZERO);
@@ -37,7 +50,7 @@ public class AccountService {
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public List<AccountResponse> getMyAccount() {
         Long user_id = getCurrentUserId();
-        List<AccountEntity> accounts = accountRepository.findByUserId(user_id);
+        List<AccountEntity> accounts = accountRepository.findAllByUserId(user_id);
         if (accounts.isEmpty()) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_FOUND);
         }
@@ -64,11 +77,11 @@ public class AccountService {
     @PreAuthorize("hasRole('CUSTOMER')")
     public AccountResponse transfer(TransferRequest request) {
         Long userId = getCurrentUserId();
-        AccountEntity sender = accountRepository.findByAccountNumber( request.getSenderAccountNumber()).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity sender = accountRepository.findByAccountNumberForUpdate( request.getSenderAccountNumber()).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if (!sender.getUser_id().equals(userId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        AccountEntity receiver = accountRepository.findByAccountNumber(request.getReceiverAccountId()).orElseThrow(() ->new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity receiver = accountRepository.findByAccountNumberForUpdate(request.getReceiverAccountId()).orElseThrow(() ->new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if(sender.getAccountNumber().equals(receiver.getAccountNumber())) {
             throw new AppException(ErrorCode.SELF_TRANSFER_NOT_ALLOWED);
         }
@@ -84,7 +97,7 @@ public class AccountService {
     @PreAuthorize("hasAnyRole('TELLER')")
     @Transactional
     public AccountResponse deposit(String accountNumber, BigDecimal amount) {
-        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         checkStatus(account);
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new AppException(ErrorCode.INVALID_AMOUNT);
@@ -95,7 +108,7 @@ public class AccountService {
     @PreAuthorize("hasRole('TELLER')")
     @Transactional
     public AccountResponse withdraw(String accountNumber, BigDecimal amount) {
-        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         checkStatus(account);
         checkAmount(account, amount);
         account.setBalance(account.getBalance().subtract(amount));
@@ -103,7 +116,7 @@ public class AccountService {
     }
     @PreAuthorize("hasAnyRole('ADMIN','TELLER')")
     public AccountResponse freeze(String accountNumber) {
-        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if (account.getStatus() == AccountStatus.LOCKED) {
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
@@ -115,7 +128,7 @@ public class AccountService {
     }
     @PreAuthorize("hasAnyRole('ADMIN')")
     public AccountResponse lock(String accountNumber) {
-        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if (account.getStatus() == AccountStatus.LOCKED) {
             throw new AppException(ErrorCode.ACCOUNT_LOCKED);
         }
@@ -124,12 +137,16 @@ public class AccountService {
     }
     @PreAuthorize("hasAnyRole('ADMIN','TELLER')")
     public AccountResponse unlock(String accountNumber) {
-        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if (account.getStatus() == AccountStatus.ACTIVE) {
             throw new AppException(ErrorCode.ACCOUNT_ALREADY_ACTIVE);
         }
         account.setStatus(AccountStatus.ACTIVE);
         return AccountResponse.toResponse(accountRepository.save(account));
+    }
+    @Transactional
+    public int activatePendingAccountsByUserId(Long userId) {
+        return accountRepository.updateAccountStatusByUserId(userId, AccountStatus.PENDING, AccountStatus.ACTIVE);
     }
     private void checkStatus(AccountEntity account) {
         if (account.getStatus() == AccountStatus.LOCKED) {
@@ -137,6 +154,9 @@ public class AccountService {
         }
         if (account.getStatus() == AccountStatus.FROZEN) {
             throw new AppException(ErrorCode.ACCOUNT_FROZEN);
+        }
+        if (account.getStatus() == AccountStatus.PENDING) {
+            throw new AppException(ErrorCode.ACCOUNT_PENDING_APPROVAL);
         }
         if (account.getStatus() != AccountStatus.ACTIVE) {
             throw new AppException(ErrorCode.ACCOUNT_NOT_ACTIVE);

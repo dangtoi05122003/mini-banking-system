@@ -16,7 +16,9 @@ public enum ErrorCode {
     ACCOUNT_NOT_ACTIVE(5007, "Tài khoản không hoạt động"),
     ACCOUNT_ALREADY_ACTIVE(5008, "Tài khoản đang hoạt động"),
     UNAUTHORIZED(5009, "Bạn không có quyền thực hiện thao tác này"),
-    SELF_TRANSFER_NOT_ALLOWED(5009, "Không thể chuyển tiền cùng một tài khoản");
+    SELF_TRANSFER_NOT_ALLOWED(5009, "Không thể chuyển tiền cùng một tài khoản"),
+    USER_SERVICE_UNAVAILABLE(5010, "UserService hiện không khả dụng"),
+    ACCOUNT_PENDING_APPROVAL(5011, "Tài khoản đang chờ xác thực KYC");
     private int code;
     private String message;
 }

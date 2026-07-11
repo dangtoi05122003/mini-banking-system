@@ -22,6 +22,8 @@ import com.minibank.UserService.dto.Request.UserIdentity.UserIdentityRequest;
 import com.minibank.UserService.dto.Response.UserIdentityResponse;
 import static com.minibank.UserService.util.SecurityUtil.getCurrentUserId;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserIdentityService {
     @Autowired
@@ -30,6 +32,8 @@ public class UserIdentityService {
     private MinioService minioService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AccountServiceClient accountServiceClient;
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public UserIdentityResponse createUserIdentity(UserIdentityRequest request) {
         Long userId = getCurrentUserId();
@@ -102,11 +106,16 @@ public class UserIdentityService {
             throw new AppException(ErrorCode.IDENTITY_UPLOAD_FAILED);
         }
     }
+    @Transactional
     @PreAuthorize("hasRole('ADMIN')")
     public UserIdentityResponse updateStatus(Long id, KycStatus status) {
         UserIdentityEntity userIdentity = userIdentityRepository.findById(id).orElseThrow(()-> new AppException(ErrorCode.IDENTITY_NOT_FOUND));
         userIdentity.setKycStatus(status);
         userIdentity.setVerifiedAt(Instant.now());
+        if(status == KycStatus.APPROVED) {
+            Long userId = userIdentity.getUser().getId();
+            accountServiceClient.sendActivationRequest(userId);
+        }
         return UserIdentityMapper.toResponse(userIdentityRepository.save(userIdentity));
     }
     @PreAuthorize("hasAnyRole('CUSTOMER')")
@@ -126,5 +135,8 @@ public class UserIdentityService {
             .stream()
             .map(UserIdentityMapper::toResponse)
             .collect(Collectors.toList());
+    }
+    public KycStatus getKycStatusByUserId(Long userId) {
+        return userIdentityRepository.findByUserId(userId).map(UserIdentityEntity::getKycStatus).orElse(KycStatus.PENDING); 
     }
 }
