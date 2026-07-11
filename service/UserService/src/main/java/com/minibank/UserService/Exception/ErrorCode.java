@@ -27,7 +27,8 @@ public enum ErrorCode {
     STAFF_LOCKED(4002, "Tài khoản nhân viên đã bị khóa"),
     STAFF_TERMINATED(4003, "Tài khoản nhân viên đã bị chấm dứt"),
     STAFF_NOT_ACTIVE(4004, "Tài khoản nhân viên chưa được kích hoạt"),
-    STAFF_NOT_LOCKED(4005, "Tài khoản nhân viên hiện không bị khóa");
+    STAFF_NOT_LOCKED(4005, "Tài khoản nhân viên hiện không bị khóa"),
+    ACCOUNT_SERVICE_UNAVAILABLE(5001, "AccountService hiện không phản hồi");
     private int code;
     private String message;
 }

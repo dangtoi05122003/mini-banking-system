@@ -1,4 +1,4 @@
-package com.minibank.UserService.Config;
+package com.minibank.AccountService.Config;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -7,9 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -18,7 +15,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
     @Value("${jwt.signerkey}")
@@ -28,7 +24,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/user/register", "/user/verify-otp","/user/reset-password", "/user/verify-password", "/auth/**", "/staff/register","/staff/reset-password", "/staff/verify-password", "/service/**").permitAll()
+                .requestMatchers("/service/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth-> oauth.jwt(jwt-> jwt.decoder(jwtDecoder()).jwtAuthenticationConverter(jwtAuthenticationConverter()))
@@ -38,13 +34,8 @@ public class SecurityConfig {
     }
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec secretKey =
-                new SecretKeySpec(SECRET_KEY.getBytes(), "HmacSHA512");
-
-        return NimbusJwtDecoder
-                .withSecretKey(secretKey)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
+        SecretKeySpec secretKey = new SecretKeySpec(SECRET_KEY.getBytes(), "HmacSHA512");
+        return NimbusJwtDecoder.withSecretKey(secretKey).macAlgorithm(MacAlgorithm.HS512).build();
     }
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -57,9 +48,5 @@ public class SecurityConfig {
         converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
 
         return converter;
-    }
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }
