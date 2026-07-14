@@ -81,7 +81,23 @@ public class AccountService {
         if (!sender.getUser_id().equals(userId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
-        AccountEntity receiver = accountRepository.findByAccountNumberForUpdate(request.getReceiverAccountId()).orElseThrow(() ->new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity receiver = accountRepository.findByAccountNumberForUpdate(request.getReceiverAccountNumber()).orElseThrow(() ->new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        if(sender.getAccountNumber().equals(receiver.getAccountNumber())) {
+            throw new AppException(ErrorCode.SELF_TRANSFER_NOT_ALLOWED);
+        }
+        checkStatus(sender);
+        checkStatus(receiver);
+        checkAmount(sender, request.getAmount());
+        sender.setBalance(sender.getBalance().subtract(request.getAmount()));
+        receiver.setBalance(receiver.getBalance().add(request.getAmount()));
+        accountRepository.save(sender);
+        accountRepository.save(receiver);
+        return AccountResponse.toResponse(sender);
+    }
+    @Transactional
+    public AccountResponse transferService(TransferRequest request) {
+        AccountEntity sender = accountRepository.findByAccountNumber( request.getSenderAccountNumber()).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        AccountEntity receiver = accountRepository.findByAccountNumber(request.getReceiverAccountNumber()).orElseThrow(() ->new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         if(sender.getAccountNumber().equals(receiver.getAccountNumber())) {
             throw new AppException(ErrorCode.SELF_TRANSFER_NOT_ALLOWED);
         }
@@ -105,10 +121,26 @@ public class AccountService {
         account.setBalance(account.getBalance().add(amount));
         return AccountResponse.toResponse(accountRepository.save(account));
     }
+    public AccountResponse depositService(String accountNumber, BigDecimal amount) {
+        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        checkStatus(account);
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new AppException(ErrorCode.INVALID_AMOUNT);
+        }
+        account.setBalance(account.getBalance().add(amount));
+        return AccountResponse.toResponse(accountRepository.save(account));
+    }
     @PreAuthorize("hasRole('TELLER')")
     @Transactional
     public AccountResponse withdraw(String accountNumber, BigDecimal amount) {
         AccountEntity account = accountRepository.findByAccountNumberForUpdate(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        checkStatus(account);
+        checkAmount(account, amount);
+        account.setBalance(account.getBalance().subtract(amount));
+        return AccountResponse.toResponse(accountRepository.save(account));
+    }
+    public AccountResponse withdrawService(String accountNumber, BigDecimal amount) {
+        AccountEntity account = accountRepository.findByAccountNumber(accountNumber).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
         checkStatus(account);
         checkAmount(account, amount);
         account.setBalance(account.getBalance().subtract(amount));
