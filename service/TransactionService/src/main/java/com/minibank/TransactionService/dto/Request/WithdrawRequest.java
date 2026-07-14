@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 public class WithdrawRequest {
     @NotNull(message = "Thông tin tài khoản không được để trống")
-    private Long accountId;
+    private String accountNumber;
     @NotNull(message = "Số tiền giao dịch không được để trống")
     @DecimalMin(value = "1000.0", message = "Số tiền giao dịch tối thiểu là 1000")
     private BigDecimal amount;

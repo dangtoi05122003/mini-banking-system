@@ -13,16 +13,16 @@ import lombok.Getter;
 public class TransactionResponse {
     private Long id;
     private String transactionCode;
-    private Long senderAccountId;
-    private Long receiverAccountId;
+    private String senderAccountNumber;
+    private String receiverAccountNumber;
     private BigDecimal amount;
     private TransactionType type;
     public static TransactionResponse toResponse(TransactionEntity transaction) {
         return TransactionResponse.builder()
             .id(transaction.getId())
             .transactionCode(transaction.getTransactionCode())
-            .senderAccountId(transaction.getSenderAccountId())
-            .receiverAccountId(transaction.getReceiverAccountId())
+            .senderAccountNumber(transaction.getSenderAccountNumber())
+            .receiverAccountNumber(transaction.getReceiverAccountNumber())
             .amount(transaction.getAmount())
             .type(transaction.getType())
             .build();

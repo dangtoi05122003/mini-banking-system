@@ -7,6 +7,6 @@ import lombok.Getter;
 @Getter
 public class TransferRequest {
     private String senderAccountNumber;
-    private String receiverAccountId;
+    private String receiverAccountNumber;
     private BigDecimal amount;
 }

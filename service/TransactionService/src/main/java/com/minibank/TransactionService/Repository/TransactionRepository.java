@@ -13,10 +13,10 @@ import com.minibank.TransactionService.Enum.TransactionType;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<TransactionEntity, Long>{
-    @Query("SELECT t FROM TransactionEntity t WHERE t.senderAccountId = :accountId OR t.receiverAccountId = :accountId")
-    List<TransactionEntity> findByAccountId(@Param("accountId") Long accountIds);
+    @Query("SELECT t FROM TransactionEntity t WHERE t.senderAccountNumber = :accountNumber OR t.receiverAccountNumber = :accountNumber")
+    List<TransactionEntity> findByAccountNumber(@Param("accountNumber") String accountNumber);
     Optional<TransactionEntity> findByTransactionCode(String transactionCode);
     List<TransactionEntity> findByType(TransactionType type);
-    @Query("SELECT t FROM TransactionEntity t WHERE (t.senderAccountId = :accountId OR t.receiverAccountId = :accountId) AND t.type = :type")
-    List<TransactionEntity> findByAccountIdAndType(@Param("accountId") Long accountId, @Param("type") TransactionType type);
+    @Query("SELECT t FROM TransactionEntity t WHERE (t.senderAccountNumber = :accountNumber OR t.receiverAccountNumber = :accountNumber) AND t.type = :type")
+    List<TransactionEntity> findByAccountNumberAndType(@Param("accountNumber") String accountNumber, @Param("type") TransactionType type);
 }

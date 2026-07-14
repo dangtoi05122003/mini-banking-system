@@ -40,13 +40,13 @@ public class TransactionController {
     public TransactionResponse getByCode(@PathVariable String transactionCode) {
         return transactionService.getByCode(transactionCode);
     }
-    @GetMapping("/account/{accountId}")
-    public List<TransactionResponse> getTransactionsByAccount(@PathVariable Long accountId) {
-        return transactionService.getTransactionsByAccount(accountId);
+    @GetMapping("/account/{accountNumber}")
+    public List<TransactionResponse> getTransactionsByAccount(@PathVariable String accountNumber) {
+        return transactionService.getTransactionsByAccount(accountNumber);
     }
-    @GetMapping("/account/{accountId}/type/{type}")
-    public List<TransactionResponse> getByAccountAndType(@PathVariable Long accountId, @PathVariable TransactionType type) {
-        return transactionService.getByAccountAndType(accountId, type);
+    @GetMapping("/account/{accountNumber}/type/{type}")
+    public List<TransactionResponse> getByAccountAndType(@PathVariable String accountNumber, @PathVariable TransactionType type) {
+        return transactionService.getByAccountAndType(accountNumber, type);
     }
     @GetMapping("/{id}")
     public TransactionResponse getById(@PathVariable Long id) {

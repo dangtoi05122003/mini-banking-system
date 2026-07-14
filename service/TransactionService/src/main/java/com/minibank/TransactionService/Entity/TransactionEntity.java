@@ -27,8 +27,8 @@ public class TransactionEntity {
     private Long id;
     @Column(unique = true, nullable = false)
     private String transactionCode;
-    private Long senderAccountId;
-    private Long receiverAccountId;
+    private String senderAccountNumber;
+    private String receiverAccountNumber;
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
     @Enumerated(EnumType.STRING)

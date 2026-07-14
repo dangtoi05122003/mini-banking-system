@@ -10,9 +10,9 @@ import lombok.Getter;
 @Getter
 public class TransferRequest {
     @NotNull(message = "Thông tin tài khoản gửi không được để trống")
-    private Long senderAccountId;
+    private String senderAccountNumber;
     @NotNull(message = "Thông tin tài khoản nhận không được để trống")
-    private Long receiverAccountId;
+    private String receiverAccountNumber;
     @NotNull(message = "Số tiền giao dịch không được để trống")
     @DecimalMin(value = "1000.0", message = "Số tiền giao dịch tối thiểu là 1000")
     private BigDecimal amount;
