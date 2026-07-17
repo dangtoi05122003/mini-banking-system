@@ -18,6 +18,8 @@ public enum ErrorCode {
     SEND_EMAIL_FAILED(2002, "Gửi email thất bại"),
     OTP_EXPIRED(2003, "Mã OTP đã hết hạn"),
     OTP_INVALID(2004, "Mã OTP không hợp lệ"),
+    TOKEN_INVALID(2005, "Token không hợp lệ"),
+    TOKEN_EXPIRED(2006, "Token đã hết hạn"),
     IDENTITY_UPLOAD_FAILED(3001, "Tải thông tin định danh thất bại"),
     IDENTITY_NOT_FOUND(3002, "Không tìm thấy thông tin định danh"),
     IDENTITY_ALREADY_SUBMITTED(3003, "Hồ sơ KYC đang chờ duyệt hoặc đã được xác minh"),
