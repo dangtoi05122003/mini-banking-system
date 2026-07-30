@@ -1,0 +1,57 @@
+.header {
+    height: 70px;
+    background: linear-gradient(
+        135deg,
+        #111827,
+        #374151
+    );
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.logo {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.login-btn,
+.logout-btn {
+    height: 38px;
+    padding: 0 22px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.login-btn {
+    background: #2563eb;
+    color: white;
+}
+.login-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+.logout-btn {
+    background: #111827;
+    color: white;
+}
+.logout-btn:hover {
+    background: #374151;
+    transform: translateY(-1px);
+}
