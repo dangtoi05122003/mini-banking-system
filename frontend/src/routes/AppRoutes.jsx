@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
+import Home from "../pages/public/Home";
 import LoginCustomer from "../pages/auth/LoginCustomer";
 import LoginStaff from "../pages/auth/LoginStaff";
 import HomeCustomer from "../pages/customer/Home";
@@ -12,6 +13,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
         <Route path={ROUTE_PATHS.LOGIN_CUSTOMER} element={<LoginCustomer />} />
         <Route path={ROUTE_PATHS.LOGIN_STAFF} element={<LoginStaff />} />
         <Route element={<PrivateRoute allowedAccountTypes={["USER"]} />}>
