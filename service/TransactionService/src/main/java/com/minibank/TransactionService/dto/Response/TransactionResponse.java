@@ -1,6 +1,7 @@
 package com.minibank.TransactionService.dto.Response;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.minibank.TransactionService.Entity.TransactionEntity;
 import com.minibank.TransactionService.Enum.TransactionType;
@@ -17,6 +18,7 @@ public class TransactionResponse {
     private String receiverAccountNumber;
     private BigDecimal amount;
     private TransactionType type;
+    private LocalDateTime createdAt;
     public static TransactionResponse toResponse(TransactionEntity transaction) {
         return TransactionResponse.builder()
             .id(transaction.getId())
@@ -25,6 +27,7 @@ public class TransactionResponse {
             .receiverAccountNumber(transaction.getReceiverAccountNumber())
             .amount(transaction.getAmount())
             .type(transaction.getType())
+            .createdAt(transaction.getCreatedAt())
             .build();
     }
 }
