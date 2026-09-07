@@ -16,6 +16,7 @@ public class AccountResponse {
     private AccountStatus status;
     private String accountNumber;
     private BigDecimal balance;
+    private Boolean isPrimary;
     public static AccountResponse toResponse(AccountEntity account) {
         return AccountResponse.builder()
             .id(account.getId())
@@ -23,6 +24,7 @@ public class AccountResponse {
             .status(account.getStatus())
             .accountNumber(account.getAccountNumber())
             .balance(account.getBalance())
+            .isPrimary(account.getIsPrimary())
             .build();
     }
 }

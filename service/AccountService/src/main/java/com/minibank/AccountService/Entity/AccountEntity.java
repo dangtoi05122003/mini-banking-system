@@ -29,4 +29,5 @@ public class AccountEntity {
     @Column(nullable = false, unique = true)
     private String accountNumber;
     private BigDecimal balance;
+    private Boolean isPrimary;
 }

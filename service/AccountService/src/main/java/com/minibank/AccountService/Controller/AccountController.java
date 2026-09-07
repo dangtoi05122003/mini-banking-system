@@ -26,6 +26,10 @@ public class AccountController {
     public AccountResponse createAccount() {
         return accountService.createAccount();
     }
+    @PutMapping("/{accountNumber}/primary")
+    public AccountResponse setPrimaryAccount(@PathVariable String accountNumber) {
+        return accountService.setPrimaryAccount(accountNumber);
+    }
     @GetMapping("/me")
     public List<AccountResponse> getMyAccount() {
         return accountService.getMyAccount();

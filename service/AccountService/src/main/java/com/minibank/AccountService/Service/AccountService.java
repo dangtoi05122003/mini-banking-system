@@ -40,12 +40,28 @@ public class AccountService {
         } catch (Exception e) {
             throw new AppException(ErrorCode.USER_SERVICE_UNAVAILABLE);
         }
+        boolean isPrimary = !accountRepository.existsByUserId(user_id);
         AccountEntity account = new AccountEntity();
         account.setStatus(status);
         account.setUser_id(user_id);
         account.setAccountNumber(generateAccountNumber());
         account.setBalance(BigDecimal.ZERO);
+        account.setIsPrimary(isPrimary);
         return AccountResponse.toResponse(accountRepository.save(account));
+    }
+    @Transactional 
+    public AccountResponse setPrimaryAccount(String accountNumber) {
+        Long user_id = getCurrentUserId();
+        AccountEntity account = accountRepository.findByAccountNumberAndUserId(accountNumber, user_id).orElseThrow(() -> new AppException(ErrorCode.ACCOUNT_NOT_FOUND));
+        if (Boolean.TRUE.equals(account.getIsPrimary())) {
+            return AccountResponse.toResponse(account);
+        }
+        AccountEntity currentPrimary = accountRepository.findByUserIdAndIsPrimaryTrue(user_id).orElse(null);
+        if (currentPrimary != null) {
+            currentPrimary.setIsPrimary(false);
+        }
+        account.setIsPrimary(true);
+        return AccountResponse.toResponse(account);
     }
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public List<AccountResponse> getMyAccount() {
