@@ -25,4 +25,10 @@ public interface AccountRepository extends JpaRepository<AccountEntity, Long>{
     @Modifying
     @Query("UPDATE AccountEntity a SET a.status = :newStatus WHERE a.user_id = :userId AND a.status = :oldStatus")
     int updateAccountStatusByUserId(@Param("userId") Long userId,  @Param("oldStatus") AccountStatus oldStatus,  @Param("newStatus") AccountStatus newStatus);
+    @Query("SELECT COUNT(a) > 0 FROM AccountEntity a WHERE a.user_id = :user_id")
+    boolean existsByUserId(@Param("user_id") Long user_id);
+    @Query("SELECT a FROM AccountEntity a WHERE a.accountNumber = :accountNumber AND a.user_id = :user_id")
+    Optional<AccountEntity> findByAccountNumberAndUserId(@Param("accountNumber") String accountNumber, @Param("user_id") Long user_id);
+    @Query(" SELECT a FROM AccountEntity a WHERE a.user_id = :user_id AND a.isPrimary = true")
+    Optional<AccountEntity> findByUserIdAndIsPrimaryTrue(@Param("user_id") Long user_id);
 }
