@@ -17,6 +17,7 @@ public class TransactionResponse {
     private String senderAccountNumber;
     private String receiverAccountNumber;
     private BigDecimal amount;
+    private String description;
     private TransactionType type;
     private LocalDateTime createdAt;
     public static TransactionResponse toResponse(TransactionEntity transaction) {
@@ -26,6 +27,7 @@ public class TransactionResponse {
             .senderAccountNumber(transaction.getSenderAccountNumber())
             .receiverAccountNumber(transaction.getReceiverAccountNumber())
             .amount(transaction.getAmount())
+            .description(transaction.getDescription())
             .type(transaction.getType())
             .createdAt(transaction.getCreatedAt())
             .build();
