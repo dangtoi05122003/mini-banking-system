@@ -16,10 +16,10 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path={ROUTE_PATHS.LOGIN_CUSTOMER} element={<LoginCustomer />} />
         <Route path={ROUTE_PATHS.LOGIN_STAFF} element={<LoginStaff />} />
-        <Route element={<PrivateRoute allowedAccountTypes={["USER"]} />}>
+        <Route element={<PrivateRoute allowedRoles={["CUSTOMER"]} />}>
           <Route path={ROUTE_PATHS.CUSTOMER_HOME} element={<HomeCustomer />} />
         </Route>
-        <Route element={<PrivateRoute allowedAccountTypes={["STAFF"]} />}>
+        <Route element={<PrivateRoute allowedRoles={["ADMIN", "TELLER"]} />}>
           <Route path={ROUTE_PATHS.STAFF_HOME} element={<HomeStaff />} />
         </Route>
         <Route path={ROUTE_PATHS.UNAUTHORIZED} element={<h1>Unauthorized</h1>} />
