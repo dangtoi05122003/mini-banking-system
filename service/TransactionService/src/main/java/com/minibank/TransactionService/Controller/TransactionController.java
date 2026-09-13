@@ -1,8 +1,8 @@
 package com.minibank.TransactionService.Controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,19 +41,19 @@ public class TransactionController {
         return transactionService.getByCode(transactionCode);
     }
     @GetMapping("/account/{accountNumber}")
-    public List<TransactionResponse> getTransactionsByAccount(@PathVariable String accountNumber) {
-        return transactionService.getTransactionsByAccount(accountNumber);
+    public Page<TransactionResponse> getTransactionsByAccount(@PathVariable String accountNumber, Pageable pageable) {
+        return transactionService.getTransactionsByAccount(accountNumber, pageable);
     }
     @GetMapping("/account/{accountNumber}/type/{type}")
-    public List<TransactionResponse> getByAccountAndType(@PathVariable String accountNumber, @PathVariable TransactionType type) {
-        return transactionService.getByAccountAndType(accountNumber, type);
+    public Page<TransactionResponse> getByAccountAndType(@PathVariable String accountNumber, @PathVariable TransactionType type, Pageable pageable) {
+        return transactionService.getByAccountAndType(accountNumber, type, pageable);
     }
     @GetMapping("/{id}")
     public TransactionResponse getById(@PathVariable Long id) {
         return transactionService.getById(id);
     }
     @GetMapping("/type/{type}")
-    public List<TransactionResponse> getByType(@PathVariable TransactionType type) {
-        return transactionService.getByType(type);
+    public Page<TransactionResponse> getByType(@PathVariable TransactionType type, Pageable pageable) {
+        return transactionService.getByType(type, pageable);
     }
 }

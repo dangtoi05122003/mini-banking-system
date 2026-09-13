@@ -1,9 +1,10 @@
 package com.minibank.TransactionService.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.minibank.TransactionService.Entity.TransactionEntity;
@@ -68,17 +69,17 @@ public class TransactionService {
         TransactionEntity transaction = transactionRepository.findByTransactionCode(transactionCode).orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_NOT_FOUND));
         return TransactionResponse.toResponse(transaction);
     }
-    public List<TransactionResponse> getTransactionsByAccount(String accountNumber) {
-        List<TransactionEntity> transactions = transactionRepository.findByAccountNumber(accountNumber);
-        return transactions.stream().map(TransactionResponse::toResponse).toList();
+    public Page<TransactionResponse> getTransactionsByAccount(String accountNumber, Pageable pageable) {
+        Page<TransactionEntity> transactions = transactionRepository.findByAccountNumber(accountNumber, pageable);
+        return transactions.map(TransactionResponse::toResponse);
     }
-    public List<TransactionResponse> getByAccountAndType(String accountNumber, TransactionType type) {
-        List<TransactionEntity> transactions = transactionRepository.findByAccountNumberAndType(accountNumber, type);
-        return transactions.stream().map(TransactionResponse::toResponse).toList();
+    public Page<TransactionResponse> getByAccountAndType(String accountNumber, TransactionType type, Pageable pageable) {
+        Page<TransactionEntity> transactions = transactionRepository.findByAccountNumberAndType(accountNumber, type, pageable);
+        return transactions.map(TransactionResponse::toResponse);
     }
-    public List<TransactionResponse> getByType(TransactionType type) {
-        List<TransactionEntity> transactions = transactionRepository.findByType(type);
-        return transactions.stream().map(TransactionResponse::toResponse).toList();
+    public Page<TransactionResponse> getByType(TransactionType type, Pageable pageable) {
+        Page<TransactionEntity> transactions = transactionRepository.findByType(type, pageable);
+        return transactions.map(TransactionResponse::toResponse);
     }
     private String generateTransactionCode(TransactionType type) {
         String prefix = switch (type) {
